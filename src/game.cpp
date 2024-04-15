@@ -24,6 +24,9 @@ Game::~Game(){
     if (charmander_sprite != nullptr){
         delete charmander_sprite;
     }
+    if (lifebar != nullptr){
+        delete lifebar;
+    }
 }
 // Init functions
 void Game::init(){
@@ -31,6 +34,7 @@ void Game::init(){
     initTextures();
     initSprites();
     initText();
+    initLifebar();
     initWindow();
 }
 void Game::initVariables(){
@@ -67,18 +71,17 @@ void Game::initText(){
     if (!font.loadFromFile(font_path)){
         std::cout << "ERROR: Failed to load font";
     }
-    player_name.setFont(font);
-    player_name.setFillColor(black);
-    player_name.setCharacterSize(30);
-    player_name.setString("BULBASSAURO");
-    player_name.setPosition(player_namePos);
+    player_name = createText(font,black,30,"BULBASSAURO",player_namePos);
+    enemy_name = createText(font,black,30,"CHARMANDER",enemy_namePos);
+    player_level = createText(font,black,24,":L5",player_levelPos);
+    enemy_level = createText(font,black,26,":L5", enemy_levelPos);
+}
+void Game::initLifebar(){
+    lifebar = new LifeBar(100);
+    lifebar->setPosition(enemy_lifePos);
 
-    enemy_name.setFont(font);
-    enemy_name.setFillColor(black);
-    enemy_name.setCharacterSize(30);
-    enemy_name.setString("CHARMANDER");
-    enemy_name.setPosition(enemy_namePos);
-
+    lifebar2 = new LifeBar(100);
+    lifebar2->setPosition(player_lifePos);
 }
 // Update functions
 void Game::update(){
@@ -98,11 +101,19 @@ void Game::updateEvent(){
         }
     }
 }
+void Game::updateLifebar(int value){
+    life -= value;
+    if (life < 0)
+        life = 0;
+    lifebar->setLife(life);
+}
 // Render functions 
 void Game::render(){
     window->clear(white);
     renderSprites();
     renderText();
+    lifebar->draw(*window);
+    lifebar2->draw(*window);
     window->display();
 }
 void Game::renderSprites(){
@@ -112,4 +123,17 @@ void Game::renderSprites(){
 void Game::renderText(){
     window->draw(player_name);
     window->draw(enemy_name);
+    window->draw(player_level);
+    window->draw(enemy_level);
+}
+
+// OTHERS FUNCTIONS
+sf::Text Game::createText(const sf::Font& font, sf::Color color, int size, const char* str, sf::Vector2f position){
+    sf::Text text;
+    text.setFont(font);
+    text.setFillColor(color);
+    text.setCharacterSize(size);
+    text.setString(str);
+    text.setPosition(position);
+    return text;
 }
